@@ -82,11 +82,24 @@ public class PokemonGoMenu: UIButton {
     /// The object that acts as the delegate of the circle menu.
     @IBOutlet weak public var delegate: AnyObject?
     
+    public var parentView:UIView? {
+        didSet {
+            if parentView != nil {
+                blurView.frame = UIScreen.mainScreen().bounds
+                parentView!.addSubview(blurView)
+                parentView!.bringSubviewToFront(self)
+                blurView.hidden = true
+            }
+        }
+    }
+    
     var buttons: [UIButton]?
     let buutonNames:[String] = ["Game","chalk_bag","Pokemon","shopping_bag"]
     
     private var customNormalIconView: UIImageView!
     private var customSelectedIconView: UIImageView!
+    
+    let blurView = UIVisualEffectView.init(effect: UIBlurEffect(style: .Light))
     
     public init(frame: CGRect, normalIcon: String?, selectedIcon: String?, buttonsCount: Int = 3, duration: Double = 2,
                 distance: Float = 100) {
@@ -115,7 +128,6 @@ public class PokemonGoMenu: UIButton {
     
     private func commonInit() {
         addActions()
-        
         customNormalIconView = addCustomImageView(state: .Normal)
         
         customSelectedIconView = addCustomImageView(state: .Selected)
@@ -285,7 +297,7 @@ public class PokemonGoMenu: UIButton {
             }
             if isShow == true {
                 delegate?.menu!(self, willDisplay: button, atIndex: index)
-                
+                blurView.hidden = false
                 button.rotatedZ(angle: angle, animated: false, delay: Double(index) * showDelay)
                 button.showAnimation(distance: _distance, duration: duration, delay: Double(index) * showDelay)
             } else {
@@ -295,8 +307,20 @@ public class PokemonGoMenu: UIButton {
             }
         }
         if isShow == false { // hide buttons and remove
+            UIView.animateWithDuration(0.4, animations: {
+                self.blurView.alpha = 0.0;
+                }, completion: {
+                    finished in
+                    self.blurView.hidden = true
+            })
             self.buttons = nil
             self.delegate?.menuCollapsed!(self)
+        }
+        else{
+            blurView.hidden = false
+            UIView.animateWithDuration(0.4, animations: {
+                self.blurView.alpha = 1.0;
+            })
         }
     }
     
